@@ -7,7 +7,10 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 // middlewares
-app.use(cors())
+app.use(cors({
+  origin:['http://localhost:5173','https://656d9d709cf6c73047d9d660--curious-custard-2ad5b3.netlify.app'],
+  credentials: true,
+}))
 app.use(express.json())
 
 
@@ -144,7 +147,17 @@ app.delete('/products/:id', async (req, res) => {
       const result = await userCollection.find(query).toArray()
       res.send(result)
     })
-
+    app.post('/users', async (req, res) => {
+      const userInfo = req.body
+      const query = { email: userInfo.email }
+      const existingUser = await userCollection.findOne(query)
+      if (existingUser) {
+        return res.send({ message: 'user already exist', insertedId: null })
+      }
+      const result = await userCollection.insertOne(user)
+      res.send(result)
+    })
+   
     app.post('/shops', async (req, res) => {
       const user = req.body
       const query = { email: user.email }
@@ -156,15 +169,9 @@ app.delete('/products/:id', async (req, res) => {
       res.send(result)
     })
 
-    app.post('/users', async (req, res) => {
-      const user = req.body
-      const result = await userCollection.insertOne(user)
-      res.send(result)
-    })
-
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
